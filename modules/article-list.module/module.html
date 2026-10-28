@@ -1,0 +1,96 @@
+{# Listado de artículos — todo dinámico con HubL:
+   blog_tags() arma los chips (refleja tags creados/borrados),
+   blog_recent_posts() trae los posts, y el cruce Ind-/Sol- es client-side. #}
+{% set posts = blog_recent_posts(group.id, 250) %}
+{% set tags = blog_tags(group.id, 250) %}
+
+<section class="eb-listing">
+  <div class="eb-listing__filters">
+    <div class="eb-fgroup">
+      <span class="eb-flabel">Industria</span>
+      <div class="eb-chips">
+        {% for tag in tags %}
+          {% if tag.name[:4] == "Ind-" %}
+            <button type="button" class="eb-chip" data-group="ind" data-tag="{{ tag.name }}" aria-pressed="false">{{ tag.name[4:] }}</button>
+          {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+    <div class="eb-fgroup">
+      <span class="eb-flabel">Solución</span>
+      <div class="eb-chips">
+        {% for tag in tags %}
+          {% if tag.name[:4] == "Sol-" %}
+            <button type="button" class="eb-chip" data-group="sol" data-tag="{{ tag.name }}" aria-pressed="false">{{ tag.name[4:] }}</button>
+          {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class="eb-listing__meta">
+    <span class="eb-count">{{ posts|length }} artículos</span>
+  </div>
+
+  <div class="eb-listing__grid">
+    {% for post in posts %}
+      <article class="eb-art" data-tags="{% for t in post.tag_list %}{{ t.name }}{% if not loop.last %}|{% endif %}{% endfor %}">
+        <a class="eb-art__link" href="{{ post.absolute_url|split('?')|first }}">
+          <h3 class="eb-art__title">{{ post.name }}</h3>
+        </a>
+        <div class="eb-art__meta">
+          <span class="eb-art__date">{{ post.publish_date_localized }}</span>
+          {% if post.blog_post_author %}
+            <span aria-hidden="true">·</span>
+            <span class="eb-art__author">{{ post.blog_post_author.display_name }}</span>
+          {% endif %}
+        </div>
+      </article>
+    {% endfor %}
+  </div>
+
+  <p class="eb-listing__empty" hidden>No hay artículos que cumplan con los filtros seleccionados. <button type="button" class="eb-clear">Quitar filtros</button></p>
+</section>
+
+<script>
+(function () {
+  var section = document.querySelector('.eb-listing');
+  if (!section) return;
+  var sel = { ind: null, sol: null };
+  var chips = Array.prototype.slice.call(section.querySelectorAll('.eb-chip'));
+  var cards = Array.prototype.slice.call(section.querySelectorAll('.eb-art'));
+  var countEl = section.querySelector('.eb-count');
+  var empty = section.querySelector('.eb-listing__empty');
+
+  function apply() {
+    var shown = 0;
+    cards.forEach(function (c) {
+      var tags = (c.getAttribute('data-tags') || '').split('|');
+      var ok = (!sel.ind || tags.indexOf(sel.ind) > -1) && (!sel.sol || tags.indexOf(sel.sol) > -1);
+      c.hidden = !ok;
+      if (ok) shown++;
+    });
+    countEl.textContent = shown + (shown === 1 ? ' artículo' : ' artículos');
+    empty.hidden = shown !== 0;
+  }
+
+  chips.forEach(function (ch) {
+    ch.addEventListener('click', function () {
+      var g = ch.getAttribute('data-group');
+      var t = ch.getAttribute('data-tag');
+      sel[g] = (sel[g] === t) ? null : t;
+      section.querySelectorAll('.eb-chip[data-group="' + g + '"]').forEach(function (x) {
+        x.setAttribute('aria-pressed', x.getAttribute('data-tag') === sel[g] ? 'true' : 'false');
+      });
+      apply();
+    });
+  });
+
+  var clear = section.querySelector('.eb-clear');
+  if (clear) clear.addEventListener('click', function () {
+    sel.ind = null; sel.sol = null;
+    chips.forEach(function (x) { x.setAttribute('aria-pressed', 'false'); });
+    apply();
+  });
+})();
+</script>

@@ -1,0 +1,84 @@
+<!--
+  templateType: blog_listing
+  label: Educbank — Listado de artículos
+  isAvailableForNewContent: true
+-->
+<!doctype html>
+<html lang="{{ html_lang }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ page_meta.html_title }}</title>
+  <meta name="description" content="{{ page_meta.meta_description }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&family=IBM+Plex+Sans:wght@400;500&display=swap">
+  {{ standard_header_includes }}
+  <style>
+    .eb-page {
+      --eb-bg: #f5f5f2;
+      --eb-surface: #ffffff;
+      --eb-border: #e2e3e0;
+      --eb-fg: #191c1a;
+      --eb-muted: #6a6e6b;
+      --eb-accent: #0d7a6f;
+      --eb-accent-weak: #e2f1ee;
+      --eb-accent-fg: #0a564e;
+      --eb-maxw: 1080px;
+      --eb-display: "Bricolage Grotesque", Georgia, serif;
+      --eb-body: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+      background: var(--eb-bg);
+      color: var(--eb-fg);
+      font-family: var(--eb-body);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+    .eb-page * { box-sizing: border-box; }
+    .eb-hero {
+      background: linear-gradient(180deg, var(--eb-accent-weak) 0%, var(--eb-bg) 100%);
+      border-bottom: 1px solid var(--eb-border);
+    }
+    .eb-hero__inner {
+      max-width: var(--eb-maxw);
+      margin: 0 auto;
+      padding: clamp(40px, 7vw, 72px) 20px clamp(32px, 5vw, 48px);
+    }
+    .eb-crumbs { font-size: 13.5px; color: var(--eb-muted); margin-bottom: 14px; }
+    .eb-crumbs a { color: var(--eb-accent-fg); text-decoration: none; }
+    .eb-crumbs a:hover { text-decoration: underline; }
+    .eb-hero__inner h1 {
+      font-family: var(--eb-display);
+      font-weight: 600;
+      font-size: clamp(30px, 5.5vw, 48px);
+      line-height: 1.05;
+      letter-spacing: -.025em;
+      margin: 0 0 12px;
+      text-wrap: balance;
+    }
+    .eb-hero__inner p { margin: 0; max-width: 58ch; color: var(--eb-muted); font-size: clamp(16px, 2.2vw, 18px); }
+    .eb-section { max-width: var(--eb-maxw); margin: 0 auto; padding: clamp(28px, 4vw, 40px) 20px clamp(56px, 8vw, 88px); }
+  </style>
+</head>
+<body>
+  <div class="eb-page">
+    <header class="eb-hero">
+      <div class="eb-hero__inner">
+        <nav class="eb-crumbs" aria-label="Ruta">
+          <a href="/">Inicio</a> <span aria-hidden="true">›</span> <span>{{ group.public_title }}</span>
+        </nav>
+        <h1>{{ group.public_title }}</h1>
+        {% if group.description %}<p>{{ group.description }}</p>{% endif %}
+      </div>
+    </header>
+
+    <main class="eb-section">
+      {% module "listado_articulos"
+        path="/cms-hub/modules/article-list.module"
+        label="Listado de artículos"
+      %}
+    </main>
+  </div>
+
+  {{ standard_footer_includes }}
+</body>
+</html>
