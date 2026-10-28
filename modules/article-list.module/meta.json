@@ -1,5 +1,5 @@
 {
-  "label": "Educbank — Listado de artículos",
+  "label": "Listado de artículos",
   "global": false,
   "host_template_types": ["BLOG_LISTING", "PAGE"],
   "is_available_for_new_content": true,

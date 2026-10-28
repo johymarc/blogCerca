@@ -1,4 +1,4 @@
-# Educbank — Home centro de contenido (CMS)
+# Home centro de contenido (CMS)
 
 Plantilla de página web para el **home** del centro de contenido y el módulo que
 lista los **blogs activados** (nombre, descripción y enlace), obtenidos con HubL.
@@ -51,7 +51,7 @@ El editor añade/ordena los blogs en el editor de página → "los blogs activad
    > `hs upload` ahora es `hs cms upload`. Ejecútalo desde fuera de la carpeta del
    > proyecto (el CLI bloquea el comando dentro de un project).
 3. En HubSpot: **Marketing → Website → Website Pages → Create → Website page**,
-   elige la plantilla **"Educbank — Home centro de contenido"**.
+   elige la plantilla **"Home centro de contenido"**.
 4. En el editor, abre el módulo **Listado de blogs** y agrega los blogs
    (Colombia, México). Publica.
 
