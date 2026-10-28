@@ -1,0 +1,6 @@
+{
+  "label": "Centro de contenido",
+  "version": "1.0",
+  "preview_path": "./templates/home.html",
+  "enable_domain_stylesheets": false
+}
