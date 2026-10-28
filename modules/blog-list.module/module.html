@@ -1,0 +1,28 @@
+{# Listado de blogs activados — obtiene nombre, descripción y URL de cada blog con blog_by_id() #}
+<section class="eb-blogs">
+  {% if module.blogs %}
+    <div class="eb-blogs__grid">
+      {% for item in module.blogs %}
+        {% set b = blog_by_id(item.blog) %}
+        {% if b %}
+          {# absolute_url puede traer ?hsLang=...; nos quedamos con la ruta limpia #}
+          {% set blog_url = b.absolute_url|split('?')|first %}
+          <a class="eb-blogcard" href="{{ blog_url }}">
+            <span class="eb-blogcard__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 22V4M4 4h13l-2 4 2 4H4" />
+              </svg>
+            </span>
+            <h3 class="eb-blogcard__title">{{ b.public_title }}</h3>
+            {% if b.description %}
+              <p class="eb-blogcard__desc">{{ b.description }}</p>
+            {% endif %}
+            <span class="eb-blogcard__go">Ver blog <span aria-hidden="true">&rarr;</span></span>
+          </a>
+        {% endif %}
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="eb-blogs__empty">Aún no has activado ningún blog. Edita este módulo y agrega los blogs que quieres mostrar en el home.</p>
+  {% endif %}
+</section>

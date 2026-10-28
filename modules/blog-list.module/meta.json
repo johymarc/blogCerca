@@ -1,0 +1,9 @@
+{
+  "label": "Educbank — Listado de blogs",
+  "global": false,
+  "host_template_types": ["PAGE"],
+  "is_available_for_new_content": true,
+  "smart_type": "NOT_SMART",
+  "no_wrapper": false,
+  "tags": []
+}

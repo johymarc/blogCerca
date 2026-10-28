@@ -1,0 +1,43 @@
+<!--
+  templateType: page
+  label: Educbank — Home centro de contenido
+  isAvailableForNewContent: true
+-->
+<!doctype html>
+<html lang="{{ html_lang }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ page_meta.html_title }}</title>
+  <meta name="description" content="{{ page_meta.meta_description }}">
+  {{ standard_header_includes }}
+  <style>
+    .eb-home-hero { max-width: 1040px; margin: 0 auto; padding: 48px 16px 8px; }
+    .eb-home-hero h1 { font-size: clamp(27px, 5vw, 42px); line-height: 1.08; letter-spacing: -.02em; margin: 0 0 10px; }
+    .eb-home-hero p { max-width: 60ch; margin: 0; color: #6a6e6b; font-size: 1.05rem; }
+    .eb-home-section { max-width: 1040px; margin: 0 auto; padding: 32px 16px 56px; }
+    .eb-home-section h2 { font-size: 1.35rem; margin: 0 0 4px; letter-spacing: -.01em; }
+    .eb-home-section .eb-tag { margin: 0 0 18px; color: #6a6e6b; }
+  </style>
+</head>
+<body>
+  <header class="eb-home-hero">
+    {% module "hero_titulo"
+      path="@hubspot/rich_text"
+      html="<h1>Conocimiento financiero para la educación en LATAM</h1><p>Explora los artículos de nuestros blogs, organizados por país, industria y tipo de solución.</p>"
+    %}
+  </header>
+
+  <main class="eb-home-section">
+    <h2>Nuestros blogs</h2>
+    <p class="eb-tag">Elige un país para explorar sus artículos.</p>
+
+    {% module "listado_blogs"
+      path="/cms-hub/modules/blog-list.module"
+      label="Listado de blogs"
+    %}
+  </main>
+
+  {{ standard_footer_includes }}
+</body>
+</html>

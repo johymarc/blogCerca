@@ -1,0 +1,28 @@
+[
+  {
+    "id": "blogs",
+    "name": "blogs",
+    "label": "Blogs a mostrar",
+    "help_text": "Agrega y ordena los blogs activados que aparecerán en el home. El nombre, la descripción y el enlace se toman automáticamente de cada blog.",
+    "required": false,
+    "locked": false,
+    "type": "group",
+    "occurrence": {
+      "min": 0,
+      "max": 25,
+      "default": 2
+    },
+    "default": [],
+    "children": [
+      {
+        "id": "blog",
+        "name": "blog",
+        "label": "Blog",
+        "help_text": "Selecciona uno de los blogs del portal.",
+        "required": true,
+        "locked": false,
+        "type": "blog"
+      }
+    ]
+  }
+]
