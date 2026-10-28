@@ -10,33 +10,136 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{{ page_meta.html_title }}</title>
   <meta name="description" content="{{ page_meta.meta_description }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&family=IBM+Plex+Sans:wght@400;500&display=swap">
   {{ standard_header_includes }}
   <style>
-    .eb-home-hero { max-width: 1040px; margin: 0 auto; padding: 48px 16px 8px; }
-    .eb-home-hero h1 { font-size: clamp(27px, 5vw, 42px); line-height: 1.08; letter-spacing: -.02em; margin: 0 0 10px; }
-    .eb-home-hero p { max-width: 60ch; margin: 0; color: #6a6e6b; font-size: 1.05rem; }
-    .eb-home-section { max-width: 1040px; margin: 0 auto; padding: 32px 16px 56px; }
-    .eb-home-section h2 { font-size: 1.35rem; margin: 0 0 4px; letter-spacing: -.01em; }
-    .eb-home-section .eb-tag { margin: 0 0 18px; color: #6a6e6b; }
+    .eb-page {
+      --eb-bg: #f5f5f2;
+      --eb-surface: #ffffff;
+      --eb-border: #e2e3e0;
+      --eb-fg: #191c1a;
+      --eb-muted: #6a6e6b;
+      --eb-accent: #0d7a6f;
+      --eb-accent-weak: #e2f1ee;
+      --eb-accent-fg: #0a564e;
+      --eb-maxw: 1080px;
+      --eb-display: "Bricolage Grotesque", Georgia, serif;
+      --eb-body: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+      background: var(--eb-bg);
+      color: var(--eb-fg);
+      font-family: var(--eb-body);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+    .eb-page * { box-sizing: border-box; }
+
+    /* Hero band */
+    .eb-hero {
+      background: linear-gradient(180deg, var(--eb-accent-weak) 0%, var(--eb-bg) 100%);
+      border-bottom: 1px solid var(--eb-border);
+    }
+    .eb-hero__inner {
+      max-width: var(--eb-maxw);
+      margin: 0 auto;
+      padding: clamp(48px, 8vw, 88px) 20px clamp(40px, 6vw, 64px);
+    }
+    .eb-hero__eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: .09em;
+      text-transform: uppercase;
+      color: var(--eb-accent-fg);
+      margin-bottom: 18px;
+    }
+    .eb-hero__eyebrow::before {
+      content: "";
+      width: 22px;
+      height: 2px;
+      background: var(--eb-accent);
+      border-radius: 2px;
+    }
+    .eb-hero__inner h1 {
+      font-family: var(--eb-display);
+      font-weight: 600;
+      font-size: clamp(32px, 6vw, 56px);
+      line-height: 1.04;
+      letter-spacing: -.025em;
+      margin: 0 0 16px;
+      max-width: 16ch;
+      text-wrap: balance;
+      color: var(--eb-fg);
+    }
+    .eb-hero__inner p {
+      margin: 0;
+      max-width: 58ch;
+      font-size: clamp(16px, 2.2vw, 19px);
+      color: var(--eb-muted);
+    }
+
+    /* Blogs section */
+    .eb-section {
+      max-width: var(--eb-maxw);
+      margin: 0 auto;
+      padding: clamp(40px, 6vw, 64px) 20px clamp(56px, 8vw, 88px);
+    }
+    .eb-section__head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 28px;
+    }
+    .eb-section__head h2 {
+      font-family: var(--eb-display);
+      font-weight: 600;
+      font-size: clamp(22px, 3.5vw, 30px);
+      letter-spacing: -.015em;
+      margin: 0;
+      color: var(--eb-fg);
+    }
+    .eb-section__head p {
+      margin: 6px 0 0;
+      color: var(--eb-muted);
+      font-size: 15px;
+    }
   </style>
 </head>
 <body>
-  <header class="eb-home-hero">
-    {% module "hero_titulo"
-      path="@hubspot/rich_text"
-      html="<h1>Conocimiento financiero para la educación en LATAM</h1><p>Explora los artículos de nuestros blogs, organizados por país, industria y tipo de solución.</p>"
-    %}
-  </header>
+  <div class="eb-page">
+    <header class="eb-hero">
+      <div class="eb-hero__inner">
+        <span class="eb-hero__eyebrow">Centro de contenido</span>
+        {% rich_text "hero_titulo"
+          label="Título del hero"
+          html="<h1>Conocimiento financiero para la educación en LATAM</h1>"
+        %}
+        {% rich_text "hero_bajada"
+          label="Bajada del hero"
+          html="<p>Explora los artículos de nuestros blogs de Colombia y México, organizados por país, industria y tipo de solución.</p>"
+        %}
+      </div>
+    </header>
 
-  <main class="eb-home-section">
-    <h2>Nuestros blogs</h2>
-    <p class="eb-tag">Elige un país para explorar sus artículos.</p>
+    <main class="eb-section">
+      <div class="eb-section__head">
+        <div>
+          <h2>Nuestros blogs</h2>
+          <p>Elige un país para explorar sus artículos.</p>
+        </div>
+      </div>
 
-    {% module "listado_blogs"
-      path="/cms-hub/modules/blog-list.module"
-      label="Listado de blogs"
-    %}
-  </main>
+      {% module "listado_blogs"
+        path="/cms-hub/modules/blog-list.module"
+        label="Listado de blogs"
+      %}
+    </main>
+  </div>
 
   {{ standard_footer_includes }}
 </body>
