@@ -1,0 +1,139 @@
+<!--
+  templateType: blog_post
+  label: Post centro de contenido
+  isAvailableForNewContent: true
+-->
+<!doctype html>
+<html lang="{{ html_lang }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ page_meta.html_title }}</title>
+  <meta name="description" content="{{ page_meta.meta_description }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+  {{ standard_header_includes }}
+  <style>
+    .eb-page {
+      --eb-bg: #f5f5f2;
+      --eb-surface: #ffffff;
+      --eb-border: #e2e3e0;
+      --eb-fg: #191c1a;
+      --eb-muted: #6a6e6b;
+      --eb-accent: #0d7a6f;
+      --eb-accent-weak: #e2f1ee;
+      --eb-accent-fg: #0a564e;
+      --eb-amber-weak: #f6ead6;
+      --eb-amber-fg: #8a5209;
+      --eb-maxw: 1080px;
+      --eb-readw: 720px;
+      --eb-display: "Bricolage Grotesque", Georgia, serif;
+      --eb-body: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+      background: var(--eb-bg);
+      color: var(--eb-fg);
+      font-family: var(--eb-body);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+    .eb-page * { box-sizing: border-box; }
+
+    .eb-hero {
+      background: linear-gradient(180deg, var(--eb-accent-weak) 0%, var(--eb-bg) 100%);
+      border-bottom: 1px solid var(--eb-border);
+    }
+    .eb-hero__inner {
+      max-width: var(--eb-readw);
+      margin: 0 auto;
+      padding: clamp(36px, 6vw, 64px) 20px clamp(28px, 4vw, 40px);
+    }
+    .eb-crumbs { font-size: 13.5px; color: var(--eb-muted); margin-bottom: 18px; }
+    .eb-crumbs a { color: var(--eb-accent-fg); text-decoration: none; }
+    .eb-crumbs a:hover { text-decoration: underline; }
+    .eb-crumbs .cur { color: var(--eb-fg); }
+
+    .eb-post-tags { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 16px; }
+    .eb-pill {
+      font-size: 12px; font-weight: 500; padding: 4px 11px; border-radius: 999px;
+      text-decoration: none; background: var(--eb-surface); border: 1px solid var(--eb-border); color: var(--eb-muted);
+    }
+    .eb-pill--ind { background: var(--eb-accent-weak); border-color: transparent; color: var(--eb-accent-fg); }
+    .eb-pill--sol { background: var(--eb-amber-weak); border-color: transparent; color: var(--eb-amber-fg); }
+
+    .eb-post-title {
+      font-family: var(--eb-display); font-weight: 600;
+      font-size: clamp(28px, 5vw, 44px); line-height: 1.08; letter-spacing: -.025em;
+      margin: 0 0 18px; text-wrap: balance;
+    }
+    .eb-byline { display: flex; align-items: center; gap: 10px; color: var(--eb-muted); font-size: 14px; }
+    .eb-byline__avatar { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; }
+    .eb-byline__name { color: var(--eb-fg); font-weight: 500; }
+
+    .eb-post { max-width: var(--eb-readw); margin: 0 auto; padding: clamp(28px, 4vw, 44px) 20px clamp(56px, 8vw, 88px); }
+    .eb-post__body { font-size: 17px; }
+    .eb-post__body > :first-child { margin-top: 0; }
+    .eb-post__body h2 { font-family: var(--eb-display); font-weight: 600; font-size: 1.6rem; letter-spacing: -.015em; margin: 2em 0 .5em; line-height: 1.2; }
+    .eb-post__body h3 { font-family: var(--eb-display); font-weight: 600; font-size: 1.25rem; margin: 1.6em 0 .4em; }
+    .eb-post__body p { margin: 0 0 1.15em; }
+    .eb-post__body ul, .eb-post__body ol { margin: 0 0 1.15em; padding-left: 1.4em; }
+    .eb-post__body li { margin-bottom: .4em; }
+    .eb-post__body a { color: var(--eb-accent-fg); text-underline-offset: 2px; }
+    .eb-post__body img { max-width: 100%; height: auto; border-radius: 12px; margin: 1.2em 0; }
+    .eb-post__body blockquote {
+      margin: 1.4em 0; padding: 4px 0 4px 20px; border-left: 3px solid var(--eb-accent);
+      color: var(--eb-muted); font-style: italic;
+    }
+    .eb-post__back { display: inline-flex; align-items: center; gap: 6px; margin-top: 8px; color: var(--eb-accent-fg); text-decoration: none; font-weight: 500; }
+    .eb-post__back:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="eb-page">
+    <header class="eb-hero">
+      <div class="eb-hero__inner">
+        <nav class="eb-crumbs" aria-label="Ruta">
+          <a href="/">Inicio</a>
+          <span aria-hidden="true">›</span>
+          <a href="{{ group.absolute_url|split('?')|first }}">{{ group.public_title }}</a>
+          <span aria-hidden="true">›</span>
+          <span class="cur">{{ content.name }}</span>
+        </nav>
+
+        {% if content.tag_list %}
+          <div class="eb-post-tags">
+            {% for t in content.tag_list %}
+              {% set prefix = t.name[:4] %}
+              <a class="eb-pill{% if prefix == 'Ind-' %} eb-pill--ind{% elif prefix == 'Sol-' %} eb-pill--sol{% endif %}" href="{{ blog_tag_url(group.id, t.slug) }}">
+                {% if prefix == 'Ind-' or prefix == 'Sol-' %}{{ t.name[4:] }}{% else %}{{ t.name }}{% endif %}
+              </a>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        <h1 class="eb-post-title">{{ content.name }}</h1>
+
+        <div class="eb-byline">
+          {% if content.blog_post_author.avatar %}
+            <img class="eb-byline__avatar" src="{{ content.blog_post_author.avatar }}" alt="{{ content.blog_post_author.display_name }}">
+          {% endif %}
+          <span>
+            {% if content.blog_post_author %}<span class="eb-byline__name">{{ content.blog_post_author.display_name }}</span> · {% endif %}
+            {{ content.publish_date_localized }}
+          </span>
+        </div>
+      </div>
+    </header>
+
+    <main class="eb-post">
+      {# content.post_body es el lienzo drag-and-drop del editor de blog #}
+      <article class="eb-post__body">
+        {{ content.post_body }}
+      </article>
+
+      <a class="eb-post__back" href="{{ group.absolute_url|split('?')|first }}">← Volver a {{ group.public_title }}</a>
+    </main>
+  </div>
+
+  {{ standard_footer_includes }}
+</body>
+</html>
