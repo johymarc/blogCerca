@@ -7,8 +7,8 @@ Cada blog representa un segmento (un país, una línea de negocio, un idioma…)
 Dentro de cada blog, los artículos se filtran por **industria** y por
 **solución** usando tags.
 
-Son assets de **CMS (Design Manager)**. Se despliegan con `hs cms upload`, no
-con `hs project upload`.
+Son assets de **CMS (Design Manager)**. Se suben con `hs cms upload`, no con
+`hs project upload`.
 
 En este README:
 
@@ -22,28 +22,17 @@ En este README:
 ## Arquitectura
 
 ```
-                 /<home>                           Plantilla: home.html
-        ┌──────────────────────────────┐          Módulo:    blog-list
-        │  Hero + "Nuestros blogs"     │          Datos:     blog_by_id()
-        │  [Blog A]   [Blog B]   …     │
-        └───────┬──────────────┬───────┘
-                │              │
-         /<blog-a>        /<blog-b>               Plantilla: blog-listing.html
-        ┌──────────────────────────────┐          Módulo:    article-list
-        │ Inicio › Blog A              │          Datos:     blog_tags()
-        │ Industria: [ … ] [ … ]       │                     blog_recent_posts()
-        │ Solución:  [ … ] [ … ]       │          Filtro:    client-side (JS)
-        │ ┌────┐ ┌────┐ ┌────┐         │
-        │ │post│ │post│ │post│         │   /<blog>/tag/<tag> usa la misma
-        └─┴─┬──┴─┴────┴─┴────┴─────────┘   plantilla con el tag preseleccionado
-            │
-       /<blog>/<post>                             Plantilla: blog-post.html
-        ┌──────────────────────────────┐          Datos:     content.*, group.*
-        │ Inicio › Blog A › Post       │                     blog_tag_url()
-        │ (Industria) (Solución)       │
-        │ Título · Autor · Fecha       │
-        │ content.post_body            │  ← lienzo drag-and-drop del editor
-        └──────────────────────────────┘
+  /<home>                  home.html + módulo blog-list
+     │                     Muestra los blogs como tarjetas.
+     │ elige un blog
+     ▼
+  /<blog>                  blog-listing.html + módulo article-list
+  /<blog>/tag/<tag>        Lista los artículos con filtros de
+     │                     Industria y Solución.
+     │ abre un artículo
+     ▼
+  /<blog>/<post>           blog-post.html
+                           Muestra el artículo con sus tags limpios.
 ```
 
 Tres capas:
@@ -59,8 +48,7 @@ Tres capas:
 
 Los filtros salen de [`blog_tags()`][fn-blog_tags], que devuelve los tags del
 blog. Si se crea un tag y se aplica a un post publicado, el filtro aparece
-solo; si se borra, desaparece. No hay que tocar código. El cambio se ve cuando
-HubSpot regenera la página (ver [Caché](#caché)).
+solo; si se borra, desaparece. No hay que tocar código.
 
 ---
 
@@ -183,7 +171,8 @@ autor).
 - **Páginas de tag:** en `/<blog>/tag/<tag>` el script lee el slug de la URL
   ([`request.path`][var-request] no expone un "tag actual", así que se toma de
   `location.pathname`) y preselecciona ese chip. Desde ahí se puede sumar el
-  otro filtro o quitarlo. Funciona con slugs con acentos (por ejemplo `ind-educación`).
+  otro filtro o quitarlo. Funciona con slugs con acentos (por ejemplo
+  `ind-educación`).
 - **`meta.json`:** disponible en plantillas `BLOG_LISTING` y `PAGE`.
 
 ---
@@ -223,58 +212,6 @@ Por ejemplo: un tag con slug `ind-retail` y nombre `Retail` aparece como
 
 ---
 
-## Desplegar
-
-1. Autenticar la cuenta (una vez):
-   ```bash
-   hs auth
-   ```
-2. Subir el theme. Hay que ejecutarlo **fuera** de la carpeta de un project de
-   HubSpot, porque el CLI bloquea `hs cms upload` dentro de uno:
-   ```bash
-   cd ~ && hs cms upload /ruta/al/repo/cms-hub cms-hub --account=<cuenta>
-   ```
-   Ver [Referencia del CLI][doc-cli].
-
-Los cambios de plantillas y módulos se aplican a **todas** las páginas que los
-usan; no hay que actualizarlas una por una. El contenido que cada página
-configuró (textos editables, blogs elegidos) se mantiene.
-
-## Activar en HubSpot
-
-1. **Home:** crear una página web con la plantilla **"Home centro de
-   contenido"** y el slug `/<home>`. En el módulo **Listado de blogs**,
-   agregar los blogs que se quieren mostrar.
-2. **Blogs:** en *Settings → Content → Blog → Templates*, para cada blog
-   elegir el theme **"Centro de contenido"** y asignar **"Listado de
-   artículos"** (listado) y **"Post centro de contenido"** (post).
-   Ver [Seleccionar plantillas de blog][kb-blog-templates].
-
-## Caché
-
-HubSpot **pre-renderiza** cada página y sirve esa copia desde su CDN. La
-portada del blog y cada página de tag tienen su propia copia y se regeneran
-por separado. Un parámetro en la URL (`?v=2`) **no** fuerza una copia nueva.
-
-Para saber qué copia se está sirviendo:
-
-```bash
-curl -sI https://<dominio>/<blog> | grep -i "x-hs-prerendered"
-```
-
-La cabecera `X-Hs-Prerendered` es la fecha en que se generó esa copia.
-
-Si un tag o post nuevo no aparece, se puede forzar la regeneración:
-
-- Re-publicar el post (**Actualizar**).
-- Guardar la configuración del blog.
-
-Subir de nuevo una plantilla o un módulo también acaba regenerando las páginas
-que los usan, pero no es inmediato: la copia vieja puede seguir sirviéndose un
-rato.
-
-No hay un botón público para purgar el CDN.
-
 ## Limitaciones conocidas
 
 - El listado pide hasta **250 posts** por blog. Si un blog crece más, hay que
@@ -298,7 +235,6 @@ No hay un botón público para purgar el CDN.
   [Campos][doc-fields]
 - [Themes][doc-themes]
 - [Drag and drop areas][doc-dnd]
-- [CLI de HubSpot][doc-cli]
 
 [doc-functions]: https://developers.hubspot.com/docs/reference/cms/hubl/functions
 [fn-blog_tags]: https://developers.hubspot.com/docs/reference/cms/hubl/functions#blog_tags
@@ -318,5 +254,3 @@ No hay un botón público para purgar el CDN.
 [doc-fields]: https://developers.hubspot.com/docs/reference/cms/fields/module-theme-fields
 [doc-themes]: https://developers.hubspot.com/docs/cms/building-blocks/themes
 [doc-dnd]: https://developers.hubspot.com/docs/cms/hubl/tags/dnd-areas
-[doc-cli]: https://developers.hubspot.com/docs/developer-tooling/local-development/hubspot-cli/reference
-[kb-blog-templates]: https://knowledge.hubspot.com/blog/manage-your-blog-template-and-settings#select-your-blog-templates
