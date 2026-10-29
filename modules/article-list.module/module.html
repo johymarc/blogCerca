@@ -10,8 +10,10 @@
       <span class="eb-flabel">Industria</span>
       <div class="eb-chips">
         {% for tag in tags %}
-          {% if tag.name[:4] == "Ind-" %}
-            <button type="button" class="eb-chip" data-group="ind" data-tag="{{ tag.name }}" aria-pressed="false">{{ tag.name[4:] }}</button>
+          {% if tag.slug[:4] == "ind-" %}
+            {% set label = tag.name %}
+            {% if tag.name[:4]|lower == "ind-" or tag.name[:4]|lower == "sol-" %}{% set label = tag.name[4:] %}{% endif %}
+            <button type="button" class="eb-chip" data-group="ind" data-tag="{{ tag.slug }}" aria-pressed="false">{{ label }}</button>
           {% endif %}
         {% endfor %}
       </div>
@@ -20,8 +22,10 @@
       <span class="eb-flabel">Solución</span>
       <div class="eb-chips">
         {% for tag in tags %}
-          {% if tag.name[:4] == "Sol-" %}
-            <button type="button" class="eb-chip" data-group="sol" data-tag="{{ tag.name }}" aria-pressed="false">{{ tag.name[4:] }}</button>
+          {% if tag.slug[:4] == "sol-" %}
+            {% set label = tag.name %}
+            {% if tag.name[:4]|lower == "ind-" or tag.name[:4]|lower == "sol-" %}{% set label = tag.name[4:] %}{% endif %}
+            <button type="button" class="eb-chip" data-group="sol" data-tag="{{ tag.slug }}" aria-pressed="false">{{ label }}</button>
           {% endif %}
         {% endfor %}
       </div>
@@ -34,7 +38,7 @@
 
   <div class="eb-listing__grid">
     {% for post in posts %}
-      <article class="eb-art" data-tags="{% for t in post.tag_list %}{{ t.name }}{% if not loop.last %}|{% endif %}{% endfor %}">
+      <article class="eb-art" data-tags="{% for t in post.tag_list %}{{ t.slug }}{% if not loop.last %}|{% endif %}{% endfor %}">
         <a class="eb-art__link" href="{{ post.absolute_url|split('?')|first }}">
           <h3 class="eb-art__title">{{ post.name }}</h3>
         </a>

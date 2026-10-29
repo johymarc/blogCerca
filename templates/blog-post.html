@@ -102,9 +102,11 @@
         {% if content.tag_list %}
           <div class="eb-post-tags">
             {% for t in content.tag_list %}
-              {% set prefix = t.name[:4] %}
-              <a class="eb-pill{% if prefix == 'Ind-' %} eb-pill--ind{% elif prefix == 'Sol-' %} eb-pill--sol{% endif %}" href="{{ blog_tag_url(group.id, t.slug) }}">
-                {% if prefix == 'Ind-' or prefix == 'Sol-' %}{{ t.name[4:] }}{% else %}{{ t.name }}{% endif %}
+              {% set sp = t.slug[:4] %}
+              {% set label = t.name %}
+              {% if t.name[:4]|lower == 'ind-' or t.name[:4]|lower == 'sol-' %}{% set label = t.name[4:] %}{% endif %}
+              <a class="eb-pill{% if sp == 'ind-' %} eb-pill--ind{% elif sp == 'sol-' %} eb-pill--sol{% endif %}" href="{{ blog_tag_url(group.id, t.slug) }}">
+                {{ label }}
               </a>
             {% endfor %}
           </div>
