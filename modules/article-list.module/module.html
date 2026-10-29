@@ -65,6 +65,20 @@
   var cards = Array.prototype.slice.call(section.querySelectorAll('.eb-art'));
   var countEl = section.querySelector('.eb-count');
   var empty = section.querySelector('.eb-listing__empty');
+  // Opcional: la plantilla puede marcar dónde mostrar los filtros activos en el breadcrumb
+  var crumbTail = document.querySelector('[data-eb-crumb-tail]');
+
+  function norm(s) {
+    s = s || '';
+    return (s.normalize ? s.normalize('NFC') : s).toLowerCase();
+  }
+
+  function labelOf(slug) {
+    for (var i = 0; i < chips.length; i++) {
+      if (chips[i].getAttribute('data-tag') === slug) return chips[i].textContent;
+    }
+    return '';
+  }
 
   function apply() {
     var shown = 0;
@@ -76,6 +90,11 @@
     });
     countEl.textContent = shown + (shown === 1 ? ' artículo' : ' artículos');
     empty.hidden = shown !== 0;
+    if (crumbTail) {
+      crumbTail.textContent = [sel.ind, sel.sol].filter(Boolean).map(function (s) {
+        return ' › ' + labelOf(s);
+      }).join('');
+    }
   }
 
   chips.forEach(function (ch) {
@@ -96,5 +115,15 @@
     chips.forEach(function (x) { x.setAttribute('aria-pressed', 'false'); });
     apply();
   });
+
+  // Página de tag (/<blog>/tag/<slug>): preselecciona el chip de ese tag
+  var m = location.pathname.match(/\/tag\/([^\/]+)/);
+  if (m) {
+    var slug;
+    try { slug = decodeURIComponent(m[1]); } catch (e) { slug = m[1]; }
+    slug = norm(slug);
+    var match = chips.filter(function (x) { return norm(x.getAttribute('data-tag')) === slug; })[0];
+    if (match) match.click();
+  }
 })();
 </script>

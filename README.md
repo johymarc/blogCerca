@@ -1,36 +1,46 @@
 # Centro de contenido (theme CMS)
 
-Theme de HubSpot CMS que agrupa los blogs de cada país (Colombia, México) en un
-centro de contenido con navegación por **país → industria → solución**.
+Theme de HubSpot CMS que agrupa varios blogs en un centro de contenido con
+navegación en tres niveles: **blog → industria → solución**.
 
-Son assets de **CMS (Design Manager)**, independientes del proyecto de UI
-Extension que vive en `src/`. Se despliegan con `hs cms upload`, no con
-`hs project upload`.
+Cada blog representa un segmento (un país, una línea de negocio, un idioma…).
+Dentro de cada blog, los artículos se filtran por **industria** y por
+**solución** usando tags.
+
+Son assets de **CMS (Design Manager)**. Se despliegan con `hs cms upload`, no
+con `hs project upload`.
+
+En este README:
+
+- `<home>` es el slug de la página home (por defecto `/home-hub`).
+- `<blog>` es la ruta de un blog (por ejemplo `/blog-a`).
+- `<post>` es el slug de un artículo.
+- `<tag>` es el slug de un tag.
 
 ---
 
 ## Arquitectura
 
 ```
-                 /home-hub                         Plantilla: home.html
+                 /<home>                           Plantilla: home.html
         ┌──────────────────────────────┐          Módulo:    blog-list
         │  Hero + "Nuestros blogs"     │          Datos:     blog_by_id()
-        │  [Colombia]   [México]       │
+        │  [Blog A]   [Blog B]   …     │
         └───────┬──────────────┬───────┘
                 │              │
-          /colombia        /mexico                Plantilla: blog-listing.html
+         /<blog-a>        /<blog-b>               Plantilla: blog-listing.html
         ┌──────────────────────────────┐          Módulo:    article-list
-        │ Inicio › Colombia            │          Datos:     blog_tags()
-        │ Industria: [Alimentos] [...] │                     blog_recent_posts()
-        │ Solución:  [WMS] [TMS]       │          Filtro:    client-side (JS)
+        │ Inicio › Blog A              │          Datos:     blog_tags()
+        │ Industria: [ … ] [ … ]       │                     blog_recent_posts()
+        │ Solución:  [ … ] [ … ]       │          Filtro:    client-side (JS)
         │ ┌────┐ ┌────┐ ┌────┐         │
-        │ │post│ │post│ │post│         │
-        └─┴─┬──┴─┴────┴─┴────┴─────────┘
+        │ │post│ │post│ │post│         │   /<blog>/tag/<tag> usa la misma
+        └─┴─┬──┴─┴────┴─┴────┴─────────┘   plantilla con el tag preseleccionado
             │
-   /colombia/<slug-del-post>                      Plantilla: blog-post.html
+       /<blog>/<post>                             Plantilla: blog-post.html
         ┌──────────────────────────────┐          Datos:     content.*, group.*
-        │ Inicio › Colombia › Post     │                     blog_tag_url()
-        │ (Alimentos) (WMS)            │
+        │ Inicio › Blog A › Post       │                     blog_tag_url()
+        │ (Industria) (Solución)       │
         │ Título · Autor · Fecha       │
         │ content.post_body            │  ← lienzo drag-and-drop del editor
         └──────────────────────────────┘
@@ -38,18 +48,19 @@ Extension que vive en `src/`. Se despliegan con `hs cms upload`, no con
 
 Tres capas:
 
-1. **Contenido:** un blog nativo de HubSpot por país. El país lo define el blog
-   (`group`), así que no se necesita un tag de país.
+1. **Contenido:** un blog nativo de HubSpot por segmento. El segmento lo define
+   el blog (`group`), así que no hace falta un tag para él.
 2. **Taxonomía:** industria y solución son **tags** del blog con una convención
    de prefijo (ver [Convención de tags](#convención-de-tags)).
-3. **Presentación:** este theme (plantillas + módulos). Todo se calcula con HubL
-   en el servidor; no hay tablas HubDB ni listas fijas que mantener.
+3. **Presentación:** este theme (plantillas y módulos). Todo se calcula con
+   HubL en el servidor: no hay tablas HubDB ni listas fijas que mantener.
 
 ### Por qué es dinámico
 
-Los filtros salen de [`blog_tags()`][fn-blog_tags], que devuelve los tags que
-existen en el blog. Si se crea un tag nuevo y se aplica a un post publicado, el
-filtro aparece solo; si se borra, desaparece. No hay que tocar código.
+Los filtros salen de [`blog_tags()`][fn-blog_tags], que devuelve los tags del
+blog. Si se crea un tag y se aplica a un post publicado, el filtro aparece
+solo; si se borra, desaparece. No hay que tocar código. El cambio se ve cuando
+HubSpot regenera la página (ver [Caché](#caché)).
 
 ---
 
@@ -69,16 +80,16 @@ cms-hub/
     │   ├── fields.json
     │   ├── meta.json
     │   └── module.css
-    └── article-list.module/         Filtros + tarjetas de artículos (listado)
+    └── article-list.module/         Filtros y tarjetas de artículos (listado)
         ├── module.html
         ├── fields.json
         ├── meta.json
         └── module.css
 ```
 
-El `theme.json` es lo que hace que las plantillas aparezcan agrupadas bajo el
-theme **"Centro de contenido"** en los selectores de página y de blog. Sin él,
-el selector del blog filtra por el theme activo y las plantillas no se ven.
+`theme.json` hace que las plantillas aparezcan agrupadas bajo el theme
+**"Centro de contenido"** en los selectores de página y de blog. Sin él, el
+selector del blog filtra por el theme activo y las plantillas no se ven.
 Ver [Themes][doc-themes].
 
 ---
@@ -87,36 +98,39 @@ Ver [Themes][doc-themes].
 
 ### `home.html` — Home centro de contenido
 
-- **Tipo:** `page` (se usa para una página web, con slug `/home-hub`).
-- **Qué muestra:** hero con título y bajada editables, y el módulo
+- **Tipo:** `page`. Se usa para la página web `/<home>`.
+- **Qué muestra:** un hero con título y bajada editables, y el módulo
   **Listado de blogs**.
 - **HubL:**
-  - Etiqueta [`rich_text`][doc-standard-tags] para el título y la bajada del
-    hero, editables desde el editor de página.
+  - Etiqueta [`rich_text`][doc-standard-tags] para el título y la bajada,
+    editables desde el editor de página.
   - Etiqueta [`module`][doc-standard-tags] para insertar `blog-list.module`.
-  - `standard_header_includes` / `standard_footer_includes`, obligatorios en
+  - `standard_header_includes` y `standard_footer_includes`, obligatorios en
     toda plantilla HTML. Ver [Plantillas][doc-templates].
 
 ### `blog-listing.html` — Listado de artículos
 
-- **Tipo:** `blog_listing` (página principal de cada blog: `/colombia`,
-  `/mexico`).
-- **Qué muestra:** breadcrumb (`Inicio › {blog}`), título y descripción del
-  blog, y el módulo **Listado de artículos**.
-- **HubL:**
-  - [`group.public_title`, `group.description`][var-blog] para el encabezado.
-  - El enlace "Inicio" apunta a `/home-hub`.
+- **Tipo:** `blog_listing`. HubSpot la usa para la portada de cada blog
+  (`/<blog>`) y también para sus páginas de tag (`/<blog>/tag/<tag>`).
+- **Qué muestra:** breadcrumb, título y descripción del blog, y el módulo
+  **Listado de artículos**.
+- **HubL:** [`group.public_title` y `group.description`][var-blog] para el
+  encabezado.
+- **Breadcrumb:** `Inicio › {blog}` y, a continuación, los filtros activos
+  (`› Industria › Solución`). El módulo los escribe en el elemento
+  `<span data-eb-crumb-tail>`. Si se quita ese elemento, el breadcrumb queda
+  fijo y el filtro sigue funcionando.
 
 ### `blog-post.html` — Post centro de contenido
 
 - **Tipo:** `blog_post`.
-- **Qué muestra:** breadcrumb (`Inicio › {blog} › {post}`), tags limpios como
-  pills, título, autor (con avatar si existe), fecha y el cuerpo del post.
+- **Qué muestra:** breadcrumb (`Inicio › {blog} › {post}`), los tags limpios
+  como pills, título, autor (con avatar si existe), fecha y el cuerpo del post.
 - **HubL:**
   - [`content.name`, `content.post_body`, `content.tag_list`,
-    `content.blog_post_author`, `content.publish_date_localized`][var-blog].
-  - [`blog_tag_url(group.id, slug)`][fn-blog_tag_url] para que cada pill enlace
-    a la página de su tag.
+    `content.blog_post_author` y `content.publish_date_localized`][var-blog].
+  - [`blog_tag_url(group.id, slug)`][fn-blog_tag_url], para que cada pill
+    enlace a la página de su tag.
   - Filtros [`split`][flt-split] (quita `?hsLang=` de las URLs) y
     [`lower`][flt-lower] (compara prefijos sin importar mayúsculas).
 - **Drag and drop:** HubSpot **no permite** `dnd_area` en plantillas
@@ -124,13 +138,16 @@ Ver [Themes][doc-themes].
   `{{ content.post_body }}`: ese cuerpo es el lienzo donde el editor arrastra
   módulos. Ver [Drag and drop areas][doc-dnd].
 
+> El enlace **Inicio** de `blog-listing.html` y `blog-post.html` apunta a
+> `/home-hub`. Si tu home usa otro slug, cámbialo en esas dos plantillas.
+
 ---
 
 ## Módulos
 
 ### `blog-list.module` — Listado de blogs
 
-Tarjetas con nombre, descripción y enlace de cada blog, para el home.
+Tarjetas con el nombre, la descripción y el enlace de cada blog, para el home.
 
 - **Campos (`fields.json`):** `blogs`, un grupo repetible con un campo de tipo
   `blog`. El editor elige qué blogs mostrar y en qué orden.
@@ -151,7 +168,8 @@ Tarjetas con nombre, descripción y enlace de cada blog, para el home.
 
 ### `article-list.module` — Listado de artículos
 
-Filtros de industria y solución, y tarjetas de artículos (título, fecha, autor).
+Filtros de industria y solución, y tarjetas de artículos (título, fecha y
+autor).
 
 - **Campos:** ninguno. Toma el blog actual de `group`.
 - **HubL:**
@@ -160,37 +178,46 @@ Filtros de industria y solución, y tarjetas de artículos (título, fecha, auto
   - Cada tarjeta guarda los slugs de sus tags en `data-tags`.
 - **Filtrado:** client-side. Al tocar un chip, el script muestra solo las
   tarjetas que tienen **todos** los tags elegidos (industria **y** solución),
-  actualiza el conteo y muestra un estado vacío si no hay resultados. Todo el
-  contenido ya está en el HTML, así que Google lo indexa.
+  actualiza el conteo y el breadcrumb, y muestra un estado vacío si no hay
+  resultados. Todo el contenido ya está en el HTML.
+- **Páginas de tag:** en `/<blog>/tag/<tag>` el script lee el slug de la URL
+  ([`request.path`][var-request] no expone un "tag actual", así que se toma de
+  `location.pathname`) y preselecciona ese chip. Desde ahí se puede sumar el
+  otro filtro o quitarlo. Funciona con slugs con acentos (por ejemplo `ind-educación`).
 - **`meta.json`:** disponible en plantillas `BLOG_LISTING` y `PAGE`.
 
 ---
 
 ## Convención de tags
 
-| Grupo     | Slug del tag      | Nombre del tag (cualquiera de los dos) | Se muestra |
-|-----------|-------------------|----------------------------------------|------------|
-| Industria | `ind-alimentos`   | `Ind-Alimentos` o `Alimentos`          | Alimentos  |
-| Solución  | `sol-wms`         | `Sol-WMS` o `WMS`                      | WMS        |
+| Grupo     | Slug del tag     | Nombre del tag (cualquiera de los dos) | Se muestra  |
+|-----------|------------------|----------------------------------------|-------------|
+| Industria | `ind-<nombre>`   | `Ind-<Nombre>` o `<Nombre>`            | `<Nombre>`  |
+| Solución  | `sol-<nombre>`   | `Sol-<Nombre>` o `<Nombre>`            | `<Nombre>`  |
 
-- **El grupo se decide por el slug**, que siempre lleva el prefijo en
-  minúscula (`ind-` / `sol-`). El nombre visible puede tenerlo o no.
-- **La etiqueta visible** es el nombre del tag; si el nombre empieza con
-  `Ind-` o `Sol-`, se quita el prefijo. Las mayúsculas del resto se respetan
-  (`Sol-CRM` → "CRM").
+Por ejemplo: un tag con slug `ind-retail` y nombre `Retail` aparece como
+**Retail** en el filtro de Industria.
+
+- **El grupo se decide por el slug**, que lleva el prefijo en minúscula
+  (`ind-` o `sol-`). El nombre visible puede tenerlo o no.
+- **La etiqueta visible** es el nombre del tag. Si empieza con `Ind-` o `Sol-`,
+  se quita el prefijo; el resto respeta mayúsculas (`Sol-CRM` → "CRM").
 - Un tag cuyo slug no empieza con `ind-` ni `sol-` no aparece en los filtros.
+- Un tag sin posts publicados en ese blog tampoco aparece.
 
 ---
 
 ## Decisiones de diseño
 
-- **HubL en lugar de GraphQL.** Ambos leen los tags en vivo, así que los dos
+- **HubL en lugar de GraphQL.** Los dos leen los tags en vivo, así que ambos
   cumplen el requisito dinámico. HubL gana aquí porque no necesita un archivo
   `.graphql` ni `dataQueryPath`, y usa atributos de post documentados. GraphQL
   convendría si se necesitara la intersección de tags **en el servidor** con
   paginación para miles de posts.
-- **Filtro client-side.** Da filtrado instantáneo sin recargar y el contenido
-  sigue en el HTML para SEO.
+- **Filtro client-side.** Da filtrado instantáneo sin recargar, y el contenido
+  sigue en el HTML.
+- **Páginas de tag reutilizadas.** No hay rutas nuevas: las páginas de tag que
+  HubSpot ya genera sirven como enlaces directos a un filtro.
 - **Theme.** Hace que las plantillas aparezcan en los selectores sin depender
   del filtro por theme.
 
@@ -202,22 +229,22 @@ Filtros de industria y solución, y tarjetas de artículos (título, fecha, auto
    ```bash
    hs auth
    ```
-2. Subir el theme. Hay que ejecutarlo **fuera** de la carpeta del proyecto (el
-   CLI bloquea `hs cms upload` dentro de un project):
+2. Subir el theme. Hay que ejecutarlo **fuera** de la carpeta de un project de
+   HubSpot, porque el CLI bloquea `hs cms upload` dentro de uno:
    ```bash
    cd ~ && hs cms upload /ruta/al/repo/cms-hub cms-hub --account=<cuenta>
    ```
    Ver [Referencia del CLI][doc-cli].
 
 Los cambios de plantillas y módulos se aplican a **todas** las páginas que los
-usan; no hay que actualizar página por página. Solo el contenido que cada
-página configuró (textos editables, blogs elegidos) se mantiene intacto.
+usan; no hay que actualizarlas una por una. El contenido que cada página
+configuró (textos editables, blogs elegidos) se mantiene.
 
 ## Activar en HubSpot
 
 1. **Home:** crear una página web con la plantilla **"Home centro de
-   contenido"**, slug `/home-hub`. En el módulo **Listado de blogs**, agregar
-   Colombia y México.
+   contenido"** y el slug `/<home>`. En el módulo **Listado de blogs**,
+   agregar los blogs que se quieren mostrar.
 2. **Blogs:** en *Settings → Content → Blog → Templates*, para cada blog
    elegir el theme **"Centro de contenido"** y asignar **"Listado de
    artículos"** (listado) y **"Post centro de contenido"** (post).
@@ -225,12 +252,26 @@ página configuró (textos editables, blogs elegidos) se mantiene intacto.
 
 ## Caché
 
-HubSpot sirve las páginas desde su CDN con `s-maxage=36000` (hasta 10 horas
-por nodo). Si un tag o post nuevo no aparece:
+HubSpot **pre-renderiza** cada página y sirve esa copia desde su CDN. La
+portada del blog y cada página de tag tienen su propia copia y se regeneran
+por separado. Un parámetro en la URL (`?v=2`) **no** fuerza una copia nueva.
 
-- Comprobar con un parámetro en la URL (`/colombia?v=2`): trae una copia nueva.
-- Forzar la regeneración: re-publicar el post (**Actualizar**), guardar la
-  configuración del blog o volver a subir la plantilla o el módulo.
+Para saber qué copia se está sirviendo:
+
+```bash
+curl -sI https://<dominio>/<blog> | grep -i "x-hs-prerendered"
+```
+
+La cabecera `X-Hs-Prerendered` es la fecha en que se generó esa copia.
+
+Si un tag o post nuevo no aparece, se puede forzar la regeneración:
+
+- Re-publicar el post (**Actualizar**).
+- Guardar la configuración del blog.
+
+Subir de nuevo una plantilla o un módulo también acaba regenerando las páginas
+que los usan, pero no es inmediato: la copia vieja puede seguir sirviéndose un
+rato.
 
 No hay un botón público para purgar el CDN.
 
@@ -238,8 +279,9 @@ No hay un botón público para purgar el CDN.
 
 - El listado pide hasta **250 posts** por blog. Si un blog crece más, hay que
   paginar o pasar el cruce de tags al servidor.
-- El chip activo cambia el color del texto, pero los estilos de botón del theme
-  base pueden pisar el fondo.
+- En una página de tag, Google ve en el HTML todos los posts del blog; el
+  filtro por el tag se aplica al cargar el script.
+- Los estilos de botón del theme base pueden pisar el fondo del chip activo.
 - Si el portal expone el autor como `full_name` en lugar de `display_name`,
   ajustar `blog-post.html` y `article-list.module/module.html`.
 
@@ -248,7 +290,7 @@ No hay un botón público para purgar el CDN.
 ## Referencias
 
 - [Funciones HubL][doc-functions]
-- [Variables HubL (blog)][var-blog]
+- [Variables HubL (blog)][var-blog] · [Variables de request][var-request]
 - [Filtros HubL][doc-filters]
 - [Etiquetas estándar HubL][doc-standard-tags]
 - [Plantillas][doc-templates] · [Plantillas de blog][doc-blog-templates]
@@ -264,6 +306,7 @@ No hay un botón público para purgar el CDN.
 [fn-blog_by_id]: https://developers.hubspot.com/docs/reference/cms/hubl/functions#blog_by_id
 [fn-blog_tag_url]: https://developers.hubspot.com/docs/reference/cms/hubl/functions#blog_tag_url
 [var-blog]: https://developers.hubspot.com/docs/reference/cms/hubl/variables#blog-variables
+[var-request]: https://developers.hubspot.com/docs/reference/cms/hubl/variables
 [doc-filters]: https://developers.hubspot.com/docs/reference/cms/hubl/filters
 [flt-split]: https://developers.hubspot.com/docs/reference/cms/hubl/filters#split
 [flt-lower]: https://developers.hubspot.com/docs/reference/cms/hubl/filters#lower
